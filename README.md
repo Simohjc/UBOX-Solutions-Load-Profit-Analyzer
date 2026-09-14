@@ -1,6 +1,6 @@
 # 🚛 UBOX Solutions – Load Profit Analyzer
 
-A Streamlit web app for owner-operators and trucking companies to quickly analyze the profitability of a load before accepting it — factoring in fuel cost, deadhead miles, driver pay, tolls, and maintenance.
+A Streamlit web app built for **[UBOX Solutions](https://uboxsolutions.com)**, a Houston, TX-based cargo van delivery and last-mile logistics company, to quickly analyze the profitability of a load before accepting it — factoring in fuel cost, deadhead miles, driver pay, tolls, and maintenance.
 
 ![UBOX Solutions](file_logo.png)
 
@@ -83,3 +83,5 @@ This project is proprietary to UBOX Solutions. All rights reserved.
 ## Contact
 
 For questions or support, reach out to UBOX Solutions.
+
+🌐 [uboxsolutions.com](https://uboxsolutions.com)
