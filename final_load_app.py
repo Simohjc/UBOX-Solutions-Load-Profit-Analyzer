@@ -1,12 +1,108 @@
 import streamlit as st
 import pandas as pd
 import os
+import psycopg2
+
+
+# connectiong python with database and saving all data in the databaase as table
+conn = psycopg2.connect(
+    host = "localhost",
+    dbname = "ubox_loads",
+    user = "postgres",
+    password = "123love"
+)
+cursor = conn.cursor()
+
+#create table for saving data in the database ubox_loads
+cursor.execute("""
+      create table if not exists tracking_loads(
+          id serial primary key,
+          pickup_location text not null,
+          delivery_location text not null,
+          pickup_datetime timestamp not null,         
+          dropoff_datetime timestamp not null,      
+          load_pay_dollar numeric not null,         
+          total_miles numeric not null,      
+          gallon_needed numeric not null,           
+          fuel_cost_dollar numeric not  null,          
+          driver_pay_dollar numeric not null,          
+          tolls_dollar  numeric not null,      
+          revenue_per_mile_dollar numeric not null,         
+          profit_after_fuel_dollar numeric not null,      
+          profit_per_mile_dollar numeric not null,       
+          maintenance_cost_dollar numeric not null,            
+          total_expenses_dollar numeric not null,           
+          net_profit_dollar numeric not null,         
+          net_profit_per_mile_dollar numeric not null,         
+          operating_margin_percent numeric not null,          
+          deadhead_pourcentage_percent numeric not null          
+      )         
+""")
+conn.commit()
+
+class Load:
+    def __init__(self,pickup_location,delivery_location,pickup_datetime,
+                 dropoff_datetime,load_pay_dollar,total_miles,gallon_needed,
+                 fuel_cost_dollar,driver_pay_dollar,tolls_dollar,revenue_per_mile_dollar,profit_after_fuel_dollar,
+                 profit_per_mile_dollar,maintenance_cost_dollar,total_expenses_dollar,net_profit_dollar,
+                 net_profit_per_mile_dollar,operating_margin_percent,deadhead_pourcentage_percent):
+        
+                  self.pickup_location = pickup_location
+                  self.delivery_location = delivery_location
+                  self.pickup_datetime = pickup_datetime    
+                  self.dropoff_datetime =  dropoff_datetime   
+                  self.load_pay_dollar = load_pay_dollar      
+                  self.total_miles = total_miles    
+                  self.gallon_needed =  gallon_needed       
+                  self.fuel_cost_dollar =  fuel_cost_dollar       
+                  self.driver_pay_dollar =   driver_pay_dollar     
+                  self.tolls_dollar  = tolls_dollar    
+                  self.revenue_per_mile_dollar =   revenue_per_mile_dollar    
+                  self.profit_after_fuel_dollar =  profit_after_fuel_dollar    
+                  self.profit_per_mile_dollar =  profit_per_mile_dollar    
+                  self.maintenance_cost_dollar =   maintenance_cost_dollar        
+                  self.total_expenses_dollar = total_expenses_dollar         
+                  self.net_profit_dollar =  net_profit_dollar      
+                  self.net_profit_per_mile_dollar =   net_profit_per_mile_dollar     
+                  self.operating_margin_percent =   operating_margin_percent      
+                  self.deadhead_pourcentage_percent = deadhead_pourcentage_percent
+                  
+    def describe(self):
+      return (f"Load: {self.pickup_location} -> {self.delivery_location} | "
+             f"Pay: ${self.load_pay_dollar} | Miles: {self.total_miles} | "
+             f"Net Profit: ${self.net_profit_dollar} | Profit/Mile: ${self.net_profit_per_mile_dollar}")
+      
+def add_load(cursor, conn, load):
+    cursor.execute(
+        """
+          insert into tracking_loads(
+           pickup_location, delivery_location, pickup_datetime, dropoff_datetime,
+            load_pay_dollar, total_miles, gallon_needed, fuel_cost_dollar, driver_pay_dollar,
+            tolls_dollar, revenue_per_mile_dollar, profit_after_fuel_dollar, profit_per_mile_dollar,
+            maintenance_cost_dollar, total_expenses_dollar, net_profit_dollar,
+            net_profit_per_mile_dollar, operating_margin_percent, deadhead_pourcentage_percent  
+          ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        
+        """,
+        (
+            load.pickup_location, load.delivery_location, load.pickup_datetime, load.dropoff_datetime,
+            load.load_pay_dollar, load.total_miles, load.gallon_needed, load.fuel_cost_dollar,
+            load.driver_pay_dollar, load.tolls_dollar, load.revenue_per_mile_dollar,
+            load.profit_after_fuel_dollar, load.profit_per_mile_dollar, load.maintenance_cost_dollar,
+            load.total_expenses_dollar, load.net_profit_dollar, load.net_profit_per_mile_dollar,
+            load.operating_margin_percent, load.deadhead_pourcentage_percent   
+        )
+    )
+    conn.commit()
+
+
+
+
+
 
 # load history
 if "load_history" not in st.session_state:
     st.session_state.load_history = []
-
-
 
 st.set_page_config(
     page_title="Load Profit Analyzer",
@@ -160,21 +256,21 @@ if submitted:
             "delivery_location": delivery_location,
             "pickup_datetime": f"{pickup_date} {pickup_time.strftime('%H:%M')}",
             "dropoff_datetime": f"{dropoff_date} {dropoff_time.strftime('%H:%M')}",
-            "load_pay_$": load_pay,
+            "load_pay_dollar": load_pay,
             "total_miles": total_miles,
             "gallon_needed": gallon_needed,
-            "fuel_cost_$": fuel_cost,
-            "driver_pay_$" : driver_pay,
-            "tolls_$" : tolls,
-            "revenue_per_mile_$": revenue_per_mile,
-            "profit_after_fuel_$": profit_after_fuel,
-            "profit_per_mile_$": profit_per_mile,
-            "maintenance_cost_$": maintenance_cost,
-            "total_expenses_$": total_expenses,
-            "net_profit_$": net_profit,
-            "net_profit_per_mile_$": net_profit_per_mile,
-            "operating_margin_%": operating_margin,
-            "deadhead_pourcentage_%": deadhead_pourcentage
+            "fuel_cost_dollar": fuel_cost,
+            "driver_pay_dollar" : driver_pay,
+            "tolls_dollar" : tolls,
+            "revenue_per_mile_dollar": revenue_per_mile,
+            "profit_after_fuel_dollar": profit_after_fuel,
+            "profit_per_mile_dollar": profit_per_mile,
+            "maintenance_cost_dollar": maintenance_cost,
+            "total_expenses_dollar": total_expenses,
+            "net_profit_dollar": net_profit,
+            "net_profit_per_mile_dollar": net_profit_per_mile,
+            "operating_margin_percent": operating_margin,
+            "deadhead_pourcentage_percent": deadhead_pourcentage
         })
         
         is_valid_input = load_pay > 0.01 and loaded_miles > 0.01 and mpg > 0.01 and diesel > 0.01 and pickup_location.strip() != "" and delivery_location.strip() != ""
@@ -182,6 +278,9 @@ if submitted:
             if not st.session_state.load_history or st.session_state.load_history[-1] != new_entry:
                st.session_state.load_history.append(new_entry)
             st.session_state.last_result = new_entry
+            #new: also save to the database
+            db_load = Load(**new_entry)
+            add_load(cursor, conn, db_load)
         else:
             st.warning("Please fill in the load details before analyzing.")
             
@@ -193,61 +292,61 @@ if "last_result" in st.session_state:
         with result1:
             st.metric("Total Miles", f"{r['total_miles']:.2f}")
         with result2:
-            st.metric("Net Profit $", f"${r['net_profit_$']:.2f}")
+            st.metric("Net Profit $", f"${r['net_profit_dollar']:.2f}")
         with result3:
-            st.metric("Net Profit per Mile $", f"${r['net_profit_per_mile_$']:.2f}")
+            st.metric("Net Profit per Mile $", f"${r['net_profit_per_mile_dollar']:.2f}")
         with result4:
-            st.metric("Total Expenses $", f"${r['total_expenses_$']:.2f}")
+            st.metric("Total Expenses $", f"${r['total_expenses_dollar']:.2f}")
         with result5:
-            st.metric("Operating Margin %", f"{r['operating_margin_%']:.2f}%")
+            st.metric("Operating Margin %", f"{r['operating_margin_percent']:.2f}%")
         with result6:
-            st.metric("Deadhead Miles %", f"{r['deadhead_pourcentage_%']:.2f}%")
+            st.metric("Deadhead Miles %", f"{r['deadhead_pourcentage_percent']:.2f}%")
 
         st.divider()
 
         st.subheader("Revenue & Performance")
         rp1, rp2, rp3, rp4, rp5 = st.columns(5)
         with rp1:
-            st.metric("Load pay $", f"{r['load_pay_$']:.2f}")
+            st.metric("Load pay $", f"{r['load_pay_dollar']:.2f}")
         with rp2:
             st.metric("Gallons needed", f"{r['gallon_needed']:.2f}")
         with rp3:
-            st.metric("Revenue per mile $", f"${r['revenue_per_mile_$']:.2f}")
+            st.metric("Revenue per mile $", f"${r['revenue_per_mile_dollar']:.2f}")
         with rp4:
-            st.metric("Profit after fuel $", f"${r['profit_after_fuel_$']:.2f}")
+            st.metric("Profit after fuel $", f"${r['profit_after_fuel_dollar']:.2f}")
         with rp5:
-            st.metric("Profit per mile $", f"${r['profit_per_mile_$']:.2f}")
+            st.metric("Profit per mile $", f"${r['profit_per_mile_dollar']:.2f}")
 
         st.subheader("Expenses")
         ex1, ex2, ex3, ex4 = st.columns(4)
         with ex1:
-            st.metric("Fuel cost $", f"${r['fuel_cost_$']:.2f}")
+            st.metric("Fuel cost $", f"${r['fuel_cost_dollar']:.2f}")
         with ex2:
-            st.metric("Maintenance cost $", f"${r['maintenance_cost_$']:.2f}")
+            st.metric("Maintenance cost $", f"${r['maintenance_cost_dollar']:.2f}")
         with ex3:
-            st.metric("Driver pay $", f"${r['driver_pay_$']:.2f}")
+            st.metric("Driver pay $", f"${r['driver_pay_dollar']:.2f}")
         with ex4:
-            st.metric("Tolls $", f"${r['tolls_$']:.2f}")
+            st.metric("Tolls $", f"${r['tolls_dollar']:.2f}")
 
         st.divider()
 
-        if r['net_profit_per_mile_$'] >= 1.50:
+        if r['net_profit_per_mile_dollar'] >= 1.50:
             st.success("GREAT LOAD")
-        elif r['net_profit_per_mile_$'] >= 1.00:
+        elif r['net_profit_per_mile_dollar'] >= 1.00:
             st.info("ACCEPTABLE LOAD")
-        elif r['net_profit_per_mile_$'] >= 0.50:
+        elif r['net_profit_per_mile_dollar'] >= 0.50:
             st.warning("LOW PROFIT LOAD")
         else:
             st.error("POOR LOAD")
 
-        if r['deadhead_pourcentage_%'] <= 10:
-            st.success(f"{r['deadhead_pourcentage_%']:.2f}% --> Deadhead - Excellent")
-        elif r['deadhead_pourcentage_%'] <= 20:
-            st.info(f"{r['deadhead_pourcentage_%']:.2f}% --> Deadhead - Good")
-        elif r['deadhead_pourcentage_%'] <= 30:
-            st.warning(f"{r['deadhead_pourcentage_%']:.2f}% --> Deadhead - High")
+        if r['deadhead_pourcentage_percent'] <= 10:
+            st.success(f"{r['deadhead_pourcentage_percent']:.2f}% --> Deadhead - Excellent")
+        elif r['deadhead_pourcentage_percent'] <= 20:
+            st.info(f"{r['deadhead_pourcentage_percent']:.2f}% --> Deadhead - Good")
+        elif r['deadhead_pourcentage_percent'] <= 30:
+            st.warning(f"{r['deadhead_pourcentage_percent']:.2f}% --> Deadhead - High")
         else:
-            st.error(f"{r['deadhead_pourcentage_%']:.2f}% --> Deadhead Miles - Very High")
+            st.error(f"{r['deadhead_pourcentage_percent']:.2f}% --> Deadhead Miles - Very High")
                 
 if st.session_state.load_history:
     df = pd.DataFrame(st.session_state.load_history)
@@ -256,13 +355,13 @@ if st.session_state.load_history:
     with col_a:
         st.metric("Total Loads Analyzed", len(df))
     with col_b:
-        st.metric("Avg Profit per Mile", f"${df['net_profit_per_mile_$'].mean():.2f}")
+        st.metric("Avg Profit per Mile", f"${df['net_profit_per_mile_dollar'].mean():.2f}")
     
     # NEW: define the styling function
     def highlight_columns(df):
         styles = pd.DataFrame('', index=df.index, columns=df.columns)
-        styles['net_profit_per_mile_$'] = 'background-color: #bbf7d0'
-        styles['total_expenses_$'] = 'background-color: #fecaca'
+        styles['net_profit_per_mile_dollar'] = 'background-color: #bbf7d0'
+        styles['total_expenses_dollar'] = 'background-color: #fecaca'
         return styles
 
     # CHANGED: was st.dataframe(df) — now applies the styling
